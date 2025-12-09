@@ -13,14 +13,30 @@ class Model:
         Quindi il grafo avrà solo i nodi che appartengono almeno ad una connessione, non tutti quelli disponibili.
         :param year: anno limite fino al quale selezionare le connessioni da includere.
         """
-        # TODO
+
+        self.G.clear()
+        lista_rifugi = DAO.read_rifugio()
+        lista_connessioni = DAO.read_sentiero(year)
+
+        for connessione in lista_connessioni:
+            if connessione.anno <= year:
+                print("Aggiungo arco", connessione.id_rifugio1, connessione.id_rifugio2)
+                r1 = lista_rifugi[connessione.id_rifugio1]
+                r2 = lista_rifugi[connessione.id_rifugio2]
+
+                self.G.add_edge(r1, r2) # aggiunge nodi se non esistono gia
+        return self.G
+
+
 
     def get_nodes(self):
         """
         Restituisce la lista dei rifugi presenti nel grafo.
         :return: lista dei rifugi presenti nel grafo.
         """
-        # TODO
+
+        lista_nodi = list(self.G.nodes())
+        return lista_nodi
 
     def get_num_neighbors(self, node):
         """
@@ -28,14 +44,18 @@ class Model:
         :param node: un rifugio (cioè un nodo del grafo)
         :return: numero di vicini diretti del nodo indicato
         """
-        # TODO
+
+        num_vicini = len(list(self.G.neighbors(node)))
+        return num_vicini
 
     def get_num_connected_components(self):
         """
         Restituisce il numero di componenti connesse del grafo.
         :return: numero di componenti connesse
         """
-        # TODO
+
+        num_comp_connesse = int(nx.number_connected_components(self.G))
+        return num_comp_connesse
 
     def get_reachable(self, start):
         """
@@ -54,4 +74,26 @@ class Model:
         return a
         """
 
-        # TODO
+        # metodo 1 dfs_tree
+        """tree = nx.dfs_tree(self.G, start)
+        rifugi_raggiungibili = list(tree.nodes())
+        rifugi_raggiungibili.remove(start)
+        return rifugi_raggiungibili"""
+
+        #metodo 2 dfs ricorsiva
+
+        visitati = set()
+        self.dfs_ricorsivo(start,visitati)
+
+        visitati.remove(start)
+        return visitati
+
+    def dfs_ricorsivo(self,nodo,visitati):
+        visitati.add(nodo)
+
+        for vicino in self.G.neighbors(nodo):
+            if vicino not in visitati:
+                self.dfs_ricorsivo(vicino,visitati)
+
+
+
